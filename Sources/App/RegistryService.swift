@@ -8,7 +8,7 @@ import Vapor
 
 struct RegistryService {
     
-    let registry: LocalRegistry
+    let registry: SPMRegistry
     
     var scope: String {
         registry.scope

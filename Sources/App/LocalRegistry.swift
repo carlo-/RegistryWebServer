@@ -4,11 +4,10 @@
 //
 
 import Foundation
-import Crypto
 
-struct LocalRegistry {
+struct LocalRegistry: SPMRegistry {
     
-    let scope = "foo"
+    let scope = "localRegistry"
     let baseDirectory: String
     
     func releases(for packageName: String) async throws -> [String] {
@@ -18,11 +17,7 @@ struct LocalRegistry {
     
     func zipChecksum(for packageName: String, version: String) async throws -> String {
         let data = try await zipData(for: packageName, version: version)
-        return Self.computeZipChecksum(for: data)
-    }
-    
-    func zipPath(for packageName: String, version: String) throws -> String {
-        (try pathOnDisk(for: packageName, version: version)) + "/\(packageName).zip"
+        return SPMUtilities.computeArchiveChecksum(data)
     }
     
     func zipData(for packageName: String, version: String) async throws -> Data {
@@ -37,16 +32,16 @@ struct LocalRegistry {
         return packageManifestData
     }
     
+    private func zipPath(for packageName: String, version: String) throws -> String {
+        (try pathOnDisk(for: packageName, version: version)) + "/\(packageName).zip"
+    }
+    
     private func pathOnDisk(for packageName: String, version: String? = nil) throws -> String {
         let path = baseDirectory + "Example Packages/\(packageName)" + (version.flatMap { "/\($0)" } ?? "")
         guard FileManager().directoryExists(atPath: path) else {
             throw Error.packageNotFound
         }
         return path
-    }
-    
-    private static func computeZipChecksum(for data: Data) -> String {
-        SHA256.hash(data: data).hex
     }
 }
 
